@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tamec Logistics &amp; Consultancy — Engineering the Earth's Resources</title>
+<meta name="description" content="Mining engineering, drone technology, blasting operations, and logistics. Tamec delivers precision across every layer of extraction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-panel:#111111;
+    --line:#232323;
+    --text:#f2f0ec;
+    --muted:#8c8c8c;
+    --accent:#e0912f;
+    --accent-dim:#7a4f1e;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:1.05;
+  }
+  .mono{
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-size:0.72rem;
+  }
+  a{color:inherit;text-decoration:none;}
+  .accent{color:var(--accent);}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+
+  /* Header */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    background:rgba(10,10,10,0.85);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;max-width:1120px;margin:0 auto;
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk';font-weight:700;font-size:1.05rem;}
+  .logo-mark{
+    width:38px;height:38px;border-radius:50%;
+    border:1px solid var(--accent-dim);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;flex-shrink:0;
+    overflow:hidden;
+  }
+  .logo-mark img{width:100%;height:100%;object-fit:cover;display:block;}
+  .menu-btn{
+    background:none;border:1px solid var(--line);color:var(--text);
+    width:44px;height:44px;border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .menu-btn span{display:block;width:18px;height:1px;background:var(--text);position:relative;}
+  .menu-btn span::before,.menu-btn span::after{
+    content:'';position:absolute;left:0;width:18px;height:1px;background:var(--text);
+  }
+  .menu-btn span::before{top:-5px;}
+  .menu-btn span::after{top:5px;}
+
+  /* Nav overlay */
+  .nav-overlay{
+    position:fixed;inset:0;background:var(--bg);z-index:200;
+    display:flex;flex-direction:column;
+    transform:translateY(-100%);transition:transform .45s cubic-bezier(.7,0,.2,1);
+  }
+  .nav-overlay.open{transform:translateY(0);}
+  .nav-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);}
+  .nav-close{background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;width:44px;height:44px;}
+  .nav-eyebrow{padding:24px 24px 0;color:var(--muted);}
+  .nav-list{flex:1;display:flex;flex-direction:column;padding:8px 24px;}
+  .nav-list a{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0;border-bottom:1px solid var(--line);
+    font-family:'Space Grotesk';font-weight:700;font-size:2rem;
+    color:var(--text);
+  }
+  .nav-list a .num{font-family:'JetBrains Mono';font-size:0.85rem;color:var(--muted);font-weight:400;}
+  .nav-list a .arrow{color:var(--muted);font-size:1.2rem;}
+  .nav-footer{padding:20px 24px 32px;color:var(--muted);font-size:0.85rem;}
+  .nav-footer .company{color:var(--text);margin-bottom:6px;}
+
+  /* Hero */
+  .hero{
+    position:relative;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:120px 24px 60px;
+    background:
+      linear-gradient(180deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.35) 40%, rgba(10,10,10,0.92) 100%),
+      url('https://images.unsplash.com/photo-1628487749130-2d41acb1802a?auto=format&fit=crop&w=1600&q=70');
+    background-size:cover;
+    background-position:center;
+  }
+  .hero-eyebrow{color:var(--accent);margin-bottom:22px;}
+  .hero h1{font-size:clamp(2.4rem,8vw,4.6rem);max-width:760px;}
+  .hero p{color:var(--muted);max-width:520px;margin:22px 0 32px;font-size:1.02rem;}
+  .btn-row{display:flex;flex-direction:column;gap:14px;max-width:420px;}
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:20px 24px;font-family:'Space Grotesk';font-weight:700;
+    letter-spacing:0.05em;text-transform:uppercase;font-size:0.92rem;
+    border-radius:var(--radius);cursor:pointer;border:none;
+  }
+  .btn-primary{background:var(--accent);color:#161005;}
+  .btn-secondary{background:transparent;border:1px solid var(--line);color:var(--text);}
+  .hero-stats{
+    display:flex;gap:36px;margin-top:44px;padding-top:24px;
+    border-top:1px solid var(--line);color:var(--muted);font-size:0.85rem;flex-wrap:wrap;
+  }
+  .hero-stats b{color:var(--text);font-family:'Space Grotesk';}
+  .dot{color:var(--accent);}
+
+  /* Section shared */
+  section{padding:96px 0;border-top:1px solid var(--line);}
+  .eyebrow{color:var(--accent);margin-bottom:20px;display:block;}
+  .section-title{font-size:clamp(1.9rem,5vw,2.8rem);margin-bottom:20px;}
+  .section-lede{color:var(--muted);max-width:560px;font-size:1.02rem;}
+
+  /* Services */
+  .service-row{
+    border-top:1px solid var(--line);padding:40px 0;
+    display:grid;grid-template-columns:60px 1fr;gap:20px;position:relative;
+  }
+  .service-row:last-child{border-bottom:1px solid var(--line);}
+  .service-num{font-family:'JetBrains Mono';color:var(--muted);font-size:0.85rem;padding-top:4px;}
+  .service-num .active{color:var(--accent);}
+  .service-row h3{font-size:1.5rem;margin-bottom:12px;}
+  .service-row p{color:var(--muted);max-width:520px;margin-bottom:16px;}
+  .deep-dive{color:var(--accent);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;font-family:'JetBrains Mono';}
+
+  /* Photo gallery */
+  .gallery-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:36px;
+  }
+  .gallery-item{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:4/5;background:#111;}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%) contrast(1.05);transition:transform .5s ease;}
+  .gallery-item:hover img{transform:scale(1.05);}
+  .gallery-caption{
+    position:absolute;left:0;right:0;bottom:0;padding:14px 16px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,0.85));
+    font-family:'JetBrains Mono';font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:#fff;
+  }
+  .gallery-caption span{color:var(--accent);}
+
+  .service-thumb{
+    width:100%;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;margin-top:18px;background:#111;
+  }
+  .service-thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(10%);}
+
+  /* Intelligence / case studies */
+  .case-card{
+    border:1px solid var(--line);border-radius:var(--radius);margin-top:32px;overflow:hidden;
+  }
+  .case-id{color:var(--accent);padding:22px 24px 0;display:block;}
+  .case-card h3{padding:8px 24px 22px;font-size:1.4rem;border-bottom:1px solid var(--line);}
+  .case-block{padding:22px 24px;border-bottom:1px solid var(--line);}
+  .case-block:last-child{border-bottom:none;}
+  .case-label{color:var(--muted);margin-bottom:8px;display:block;}
+  .case-block p{color:#ddd;}
+  .result-grid{display:flex;gap:40px;flex-wrap:wrap;}
+  .result-item .num{font-family:'Space Grotesk';font-weight:700;font-size:2rem;color:var(--accent);}
+  .result-item .label{color:var(--muted);font-size:0.8rem;letter-spacing:0.08em;text-transform:uppercase;margin-top:4px;}
+
+  /* About */
+  .about p{color:var(--muted);max-width:640px;margin-bottom:20px;font-size:1.02rem;}
+
+  /* Contact / form */
+  .form-group{margin-bottom:28px;}
+  .form-group label{display:block;color:var(--muted);margin-bottom:10px;}
+  .form-group input,.form-group select,.form-group textarea{
+    width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);
+    color:var(--text);font-size:1rem;padding:10px 0;font-family:'Inter';
+  }
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+    outline:none;border-bottom-color:var(--accent);
+  }
+  .form-group input::placeholder,.form-group textarea::placeholder{color:#555;}
+  .form-section-title{color:var(--muted);margin:36px 0 20px;}
+  .form-section-title:first-child{margin-top:0;}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238c8c8c'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;background-size:18px;}
+  select option{background:#111;}
+  #formStatus{margin-top:20px;font-size:0.9rem;}
+  #formStatus.success{color:#7cc78a;}
+  #formStatus.error{color:#e05a5a;}
+
+  /* Footer */
+  footer{padding:64px 0 32px;color:var(--muted);}
+  .footer-top{display:flex;flex-direction:column;gap:28px;}
+  .footer-logo{display:flex;align-items:center;gap:12px;color:var(--text);font-family:'Space Grotesk';font-weight:700;}
+  .footer-tagline{max-width:420px;font-size:0.95rem;}
+  .footer-contact a{display:block;margin-top:8px;color:var(--muted);}
+  .footer-contact a:hover{color:var(--accent);}
+  .footer-cols{display:flex;gap:64px;flex-wrap:wrap;margin-top:36px;}
+  .footer-col a{display:block;margin-bottom:12px;color:var(--muted);}
+  .footer-col a:hover{color:var(--text);}
+  .footer-col .heading{color:#666;font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;font-family:'JetBrains Mono';}
+  .footer-bottom{
+    margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
+    font-size:0.82rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  }
+  .footer-bottom .social a{margin-left:20px;}
+
+  @media(min-width:760px){
+    .hero{padding:140px 24px 90px;}
+    .service-row{grid-template-columns:100px 1fr;}
+    .footer-top{flex-direction:row;justify-content:space-between;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-mark">
+        <img src="logo.png" alt="Tamec Logistics & Consultancy logo">
+      </span>
+      TAMEC
+    </div>
+    <button class="menu-btn" id="menuOpen" aria-label="Open menu"><span></span></button>
+  </div>
+</header>
+
+<nav class="nav-overlay" id="navOverlay">
+  <div class="nav-top">
+    <div class="logo">
+      <span class="logo-mark">
+        <img src="logo.png" alt="Tamec Logistics & Consultancy logo">
+      </span>
+      TAMEC
+    </div>
+    <button class="nav-close" id="menuClose" aria-label="Close menu">&times;</button>
+  </div>
+  <span class="mono nav-eyebrow">// Navigation Manifest</span>
+  <div class="nav-list">
+    <a href="#hero"><span><span class="num">01&nbsp; </span>Command</span><span class="arrow">↗</span></a>
+    <a href="#services"><span><span class="num">02&nbsp; </span>Services</span><span class="arrow">↗</span></a>
+    <a href="#gallery"><span><span class="num">03&nbsp; </span>Gallery</span><span class="arrow">↗</span></a>
+    <a href="#intelligence"><span><span class="num">04&nbsp; </span>Intelligence</span><span class="arrow">↗</span></a>
+    <a href="#about"><span><span class="num">05&nbsp; </span>About</span><span class="arrow">↗</span></a>
+    <a href="#contact"><span><span class="num">06&nbsp; </span>Contact</span><span class="arrow">↗</span></a>
+  </div>
+  <div class="nav-footer">
+    <div class="company">Tamec Logistics &amp; Consultancy</div>
+    <div>Mining · Drones · Blasting · Logistics</div>
+  </div>
+</nav>
+
+<section class="hero" id="hero" style="border-top:none;padding-top:120px;">
+  <div class="wrap" style="width:100%;padding:0 24px;">
+    <span class="mono hero-eyebrow">Mining · Drones · Blasting · Logistics</span>
+    <h1>Engineering <span class="accent">the Earth's</span> Resources.</h1>
+    <p>From mining engineering and blasting operations to drone-powered exploration and workforce solutions — Tamec delivers precision across every layer of extraction.</p>
+    <div class="btn-row">
+      <a href="#contact" class="btn btn-primary">Request a Consultation ↗</a>
+      <a href="#services" class="btn btn-secondary">Explore Services</a>
+    </div>
+    <div class="hero-stats">
+      <span><b>Sites:</b> 47</span>
+      <span class="dot">●</span>
+      <span><b>Drone Survey Hours:</b> 12,400+</span>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <span class="mono eyebrow">// Capability Index</span>
+    <h2 class="section-title">Services.</h2>
+    <p class="section-lede">Seven disciplines, one command structure. Every engagement draws on the same operational core.</p>
+
+    <div class="service-row">
+      <div class="service-num">01</div>
+      <div>
+        <h3>Mining Engineering Consultancy</h3>
+        <p>Technical advisory across mine planning, ore body assessment, and extraction strategy — built on decades of applied field experience.</p>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num">02</div>
+      <div>
+        <h3>Drone Technology &amp; Aerial Survey</h3>
+        <p>Drone-powered exploration, volumetric surveys, and site mapping that replace slow, high-risk manual inspection.</p>
+        <div class="service-thumb"><img src="https://images.unsplash.com/photo-1657093114835-031e7cf9520c?auto=format&fit=crop&w=1200&q=70" alt="Drone flying over a field during an aerial survey" loading="lazy"></div>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num">03</div>
+      <div>
+        <h3>Blasting Operations</h3>
+        <p>Precision blast design and execution, engineered to maximize ore recovery while minimizing vibration and dilution.</p>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num"><span class="active">04</span></div>
+      <div>
+        <h3>Rockdrill Machine Fitting</h3>
+        <p>Professional fitting, maintenance, and servicing of rockdrill machinery. Keeping your extraction equipment operating at peak performance and reliability.</p>
+        <div class="service-thumb"><img src="https://images.unsplash.com/photo-1712069951097-b37e02e372fb?auto=format&fit=crop&w=1200&q=70" alt="Drilling rig on site" loading="lazy"></div>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num">04</div>
+      <div>
+        <h3>Blasting Training &amp; Lessons</h3>
+        <p>Comprehensive mine blasting lessons and certification programs. Transferring critical skills to your on-site crews.</p>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num">05</div>
+      <div>
+        <h3>Labour Broking</h3>
+        <p>Vetted, site-ready workforce placement for mining and logistics operations, scaled to project demand.</p>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+    <div class="service-row">
+      <div class="service-num">06</div>
+      <div>
+        <h3>Logistics</h3>
+        <p>End-to-end coordination of equipment, materials, and personnel movement across remote and active sites.</p>
+        <span class="deep-dive">Deep Dive →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <span class="mono eyebrow">// In The Field</span>
+    <h2 class="section-title">Every Layer, <span class="accent">Documented.</span></h2>
+    <p class="section-lede">A glimpse of the ground we cover — from open-pit faces to the fields our drones survey.</p>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1628487749130-2d41acb1802a?auto=format&fit=crop&w=900&q=70" alt="Open-pit mining operation" loading="lazy">
+        <div class="gallery-caption"><span>01</span> Mining</div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1712069951097-b37e02e372fb?auto=format&fit=crop&w=900&q=70" alt="Drilling rig on site" loading="lazy">
+        <div class="gallery-caption"><span>02</span> Drilling</div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1657093114835-031e7cf9520c?auto=format&fit=crop&w=900&q=70" alt="Drone flying over a field" loading="lazy">
+        <div class="gallery-caption"><span>03</span> Drones</div>
+      </div>
+      <div class="gallery-item">
+        <img src="https://images.unsplash.com/photo-1719253860282-cd3f93da6548?auto=format&fit=crop&w=900&q=70" alt="Aerial view of agricultural fields" loading="lazy">
+        <div class="gallery-caption"><span>04</span> Agriculture</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="intelligence">
+  <div class="wrap">
+    <span class="mono eyebrow">// Consultancy Ledger</span>
+    <h2 class="section-title">Intelligence <span class="accent">in Action.</span></h2>
+    <p class="section-lede">Data-driven outcomes. No marketing speak — just the problem, the strategy, and the measurable result.</p>
+
+    <div class="case-card">
+      <span class="mono case-id">CS-001</span>
+      <h3>Open-Pit Gold Operation</h3>
+      <div class="case-block">
+        <span class="mono case-label">Problem</span>
+        <p>Inefficient blast patterns causing 18% ore dilution and excessive ground vibration near site boundaries.</p>
+      </div>
+      <div class="case-block">
+        <span class="mono case-label">Strategy</span>
+        <p>Redesigned blast geometry. Implemented precision timing and drone-verified burden measurements ahead of each blast.</p>
+      </div>
+      <div class="case-block">
+        <span class="mono case-label">Results</span>
+        <div class="result-grid">
+          <div class="result-item"><div class="num">+24%</div><div class="label">Ore Recovery</div></div>
+          <div class="result-item"><div class="num">-32%</div><div class="label">Vibration</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="about">
+  <div class="wrap">
+    <span class="mono eyebrow">// About Tamec</span>
+    <h2 class="section-title">From the Sky <span class="accent">to the Bedrock.</span></h2>
+    <p>Tamec Logistics &amp; Consultancy is a multi-disciplinary mining and logistics company operating at the intersection of engineering, technology, and workforce solutions. We bring together mining engineering expertise, drone-powered aerial exploration, and precision blasting operations under one roof.</p>
+    <p>From consultancy in mining engineering and blasting operations to rockdrill machine fitting and specialized blasting training, we equip extraction operations with the skills, equipment, and intelligence they need to perform. Our drone technology enables mining teams to survey, plan, and monitor sites with a level of precision that ground-based methods can't match — while our logistics and labour broking services keep every operation staffed and supplied.</p>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <span class="mono eyebrow">// Get In Touch</span>
+    <h2 class="section-title">Request a Consultation.</h2>
+    <p class="section-lede" style="margin-bottom:40px;">Tell us about your site and what you need. We'll route it to the right team.</p>
+
+    <form id="quoteForm">
+      <div class="form-section-title mono">Tell us where you are</div>
+
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" placeholder="Your full name" required>
+      </div>
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input type="text" id="company" name="company" placeholder="Organization name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@company.com" required>
+      </div>
+
+      <div class="form-section-title mono">Tell us what you need</div>
+
+      <div class="form-group">
+        <label for="service_level">Service Level</label>
+        <select id="service_level" name="service_level" required>
+          <option value="" disabled selected>Select a service</option>
+          <option value="mining_engineering">Mining Engineering Consultancy</option>
+          <option value="drone_survey">Drone Technology &amp; Aerial Survey</option>
+          <option value="blasting_operations">Blasting Operations</option>
+          <option value="rockdrill_fitting">Rockdrill Machine Fitting</option>
+          <option value="blasting_training">Blasting Training &amp; Lessons</option>
+          <option value="labour_broking">Labour Broking</option>
+          <option value="logistics">Logistics</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="message">Details</label>
+        <textarea id="message" name="message" rows="4" placeholder="Tell us about your site and timeline"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:12px;">Submit Request</button>
+      <div id="formStatus"></div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo">
+          <span class="logo-mark">
+            <img src="logo.png" alt="Tamec Logistics & Consultancy logo">
+          </span>
+          TAMEC Logistics &amp; Consultancy
+        </div>
+        <p class="footer-tagline">Mining engineering, drone technology, blasting operations, and logistics — from the sky to the bedrock.</p>
+        <div class="footer-contact">
+          <a href="tel:+263773257589">+263 773 257 589</a>
+          <a href="https://wa.me/263773257589" target="_blank" rel="noopener">WhatsApp: +263 773 257 589</a>
+          <a href="https://facebook.com" target="_blank" rel="noopener">Facebook: Tawanda Takavada Dhili</a>
+        </div>
+      </div>
+
+      <div class="footer-cols">
+        <div class="footer-col">
+          <div class="heading">Sitemap</div>
+          <a href="#about">About</a>
+          <a href="#intelligence">Case Studies</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <div class="footer-col">
+          <div class="heading">Legal</div>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Tamec Logistics &amp; Consultancy. All rights reserved.</span>
+      <span class="social">
+        <a href="https://wa.me/263773257589" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav toggle
+  const navOverlay = document.getElementById('navOverlay');
+  document.getElementById('menuOpen').addEventListener('click', () => navOverlay.classList.add('open'));
+  document.getElementById('menuClose').addEventListener('click', () => navOverlay.classList.remove('open'));
+  navOverlay.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navOverlay.classList.remove('open')));
+
+  // ---------------------------------------------------------------
+  // SUPABASE CONFIG — replace these two values with your real project
+  // Find them in: Supabase Dashboard → Project Settings → API
+  // ---------------------------------------------------------------
+  const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+  const SUPABASE_ANON_KEY = 'YOUR-ANON-PUBLIC-KEY';
+  const QUOTES_TABLE = 'quote_requests'; // <-- change to match your actual table name
+
+  const supabaseClient = (SUPABASE_URL.includes('YOUR-PROJECT-REF'))
+    ? null
+    : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form = document.getElementById('quoteForm');
+  const statusEl = document.getElementById('formStatus');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = '';
+    statusEl.className = '';
+
+    const payload = {
+      name: form.name.value,
+      company: form.company.value,
+      email: form.email.value,
+      service_level: form.service_level.value,
+      message: form.message.value,
+      created_at: new Date().toISOString()
+    };
+
+    if (!supabaseClient) {
+      statusEl.textContent = 'Supabase isn\'t connected yet — add your project URL and anon key in the script to go live.';
+      statusEl.className = 'error';
+      console.log('Quote form payload (not sent):', payload);
+      return;
+    }
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    const { error } = await supabaseClient.from(QUOTES_TABLE).insert([payload]);
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Request';
+
+    if (error) {
+      statusEl.textContent = 'Something went wrong — please try again or contact us directly.';
+      statusEl.className = 'error';
+      console.error(error);
+    } else {
+      statusEl.textContent = 'Request received — we\'ll be in touch shortly.';
+      statusEl.className = 'success';
+      form.reset();
+    }
+  });
+</script>
+
+</body>
+</html>
